@@ -1,0 +1,6 @@
+CREATE PROCEDURE fun()  LANGUAGE plpgsql
+AS $$
+BEGIN
+		RAISE NOTICE 'FUN NOW!!!';
+END;
+$$;
