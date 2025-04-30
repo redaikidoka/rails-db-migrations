@@ -18,7 +18,7 @@ Our Goals:
 - ability to see and review changes in Github Pull Requests
 - simple, fast and easy to invoke
 
-## Solution
+## SHELL SCRIPTS Solution
 
 We made a little cluster of shell scripts (I know, not a very Ruby solution, but clean, clear and fast):
 
@@ -184,7 +184,160 @@ These shell scripts are written to work in Linux.
 - If you're on Windows, they should work in the WSL terminal (Search for "ubuntu" or "WSL" in Start Menu)
 - If you're on the Mac, you'll need to edit the `sed` commands to work with `sed` on the Mac, which is different!
 
-## LICENSE
+## SHELL SCRIPTS Solution
+
+We made a little cluster of shell scripts (I know, not a very Ruby solution, but clean, clear and fast):
+
+- `lib/tasks/function.rake`
+- `lib/tasks/procedure.rake`
+- `lib/tasks/trigger.rake`
+- `lib/tasks/seed.rake`
+- `lib/tasks/view.rake`
+
+that look for db object definitions the `db/` folders for each specific object:
+
+- `db/views/`
+- `db/functions/`
+- `db/procedures/`
+- `db/triggers/`
+- `db/seeds/`
+
+### INSTALLATION
+
+1. Copy the rake tasks into the `lib/tasks` folder of your rails project.
+2. Create the related db folders: `mkdir db/functions db/procedures db/triggers db/seeds db/views`
+
+### Usage
+
+In general, when you want to update or create a database object, you
+
+1. create or edit the file, for example `db/functions/whee.sql` to create / update the function `whee()`
+2. Create the migration with `rails function:do[whee.sql]`
+
+This will generate a migration file in `db/migrate/` with a unique naming scheme that you can run with `rails db:migrate`.
+
+#### SETUP
+
+1. Copy the migration file `db/migrations/20250428183925_setup_happy.rb` into your project.
+2. Run `rails db:migrate` to create the table.
+3. Copy the seed file `db/seeds/happies.sql` into your project.
+4. Copy the procedures file, `db/procedures/fun.sql`, into your project.
+5. Copy the functions file, `db/functions/whee.sql`, into your project.
+6. Copy the views file, `db/views/happy_view.sql`, into your project.
+7. Copy the triggers file, `db/triggers/trbiu_voucher_sessions.sql`, into your project.
+
+#### PROCEDURE
+
+1. Verify the procedure file looks like `db/procedures/fun.sql` :
+
+```
+CREATE PROCEDURE fun()  LANGUAGE plpgsql
+AS $$
+BEGIN
+		RAISE NOTICE 'FUN NOW!!!';
+END;
+$$;
+```
+
+2. Create the migration: `rails procedure:do[fun.sql]`
+3. Run the migration: `rails db:migrate`
+4. In your database tool of choice (DataGrip, anyone?), run the stored procedure, `CALL fun();`
+5. Look for the RAISE NOTICE output
+6. `DROP PROCEDURE fun();`
+
+#### FUNCTION
+
+1. Verify the function file looks like `db/functions/whee.sql` :
+
+```
+CREATE FUNCTION whee() returns integer  LANGUAGE plpgsql
+AS $$
+BEGIN
+		RETURN 1;
+END;
+$$;
+```
+
+2. Create the migration: `rails function:do[whee.sql]`
+3. Run the migration: `rails db:migrate`
+4. In your database tool of choice, `SELECT whee();`
+5. Make sure you got `1` back?
+6. `DROP FUNCTION IF EXISTS whee();`
+
+#### SEEDS
+
+1. Verify the seed file looks like `db/seeds/happies.sql` :
+
+```
+INSERT INTO public.happies (id, name, happy_type)
+VALUES  (-1, 'At Work', 'professional'),
+        (-2, 'At Home', 'personal'),
+        (-3, 'At the Park', 'personal'),
+        (-4, 'In Bed', 'personal');
+```
+
+2. Create the migration: `rails seed:do[happies.sql]`
+3. Run the migration: `rails db:migrate`
+4. In your favorite database tool, `SELECT * FROM happies;`
+5. Make sure you get back the 4 rows you inserted
+
+#### VIEW
+
+1. Verify the view file looks like `db/views/vw_happy.sql` :
+
+```
+CREATE VIEW vw_happy AS
+SELECT * FROM happies where id = -1;;
+```
+
+2. Create the migration: `rails view:do[happy_view.sql]`
+3. Run the migration: `rails db:migrate`
+4. In datagrip, `SELECT * FROM happy_view;`
+5. `DROP VIEW IF EXISTS happy_view;`
+
+#### TRIGGER
+
+Note: We have naming conventions to make trigger functions and triggers more findable and self-documenting.
+
+1. Verify you have a trigger function defined in `db/functions/tr_prevent_deletion.sql` that looks like:
+
+```
+CREATE OR REPLACE FUNCTION tr_prevent_deletion()
+RETURNS TRIGGER AS $$
+BEGIN
+  RAISE EXCEPTION 'Deletion is not allowed from this table.';
+  RETURN NULL;
+END;
+$$ LANGUAGE plpgsql;
+```
+
+2. Create a migration to create this function: `rails function:do[tr_prevent_deletion.sql]`
+3. Verify the before delete **trigger** file looks like `db/triggers/trbd_happies.sql`:
+
+```
+CREATE TRIGGER trbd_happies
+BEFORE DELETE ON happies
+FOR EACH ROW
+          EXECUTE FUNCTION tr_calculate_entity_contacts;
+```
+
+4. Create a migration to create this trigger: `rails trigger:do[trbd_happies.sql]`
+5. Run the migrations: `rails db:migrate`
+6. In your favorite sql tool, verify the trigger exists
+7. activate the trigger with `DELETE from happies WHERE id < 0;
+
+### CLEANUP
+
+```SQL
+DROP TRIGGER IF EXISTS trbd_happies ON happies;
+DROP FUNCTION IF EXISTS tr_prevent_deletion();
+DROP VIEW IF EXISTS vw_happy;
+DROP FUNCTION IF EXISTS whee();
+DROP PROCEDURE IF EXISTS fun();
+DROP TABLE IF EXISTS happies;
+```
+
+# LICENSE
 
 The MIT License (MIT)
 
