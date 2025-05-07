@@ -184,9 +184,9 @@ These shell scripts are written to work in Linux.
 - If you're on Windows, they should work in the WSL terminal (Search for "ubuntu" or "WSL" in Start Menu)
 - If you're on the Mac, you'll need to edit the `sed` commands to work with `sed` on the Mac, which is different!
 
-## SHELL SCRIPTS Solution
+## RAKE TASK Solution
 
-We made a little cluster of shell scripts (I know, not a very Ruby solution, but clean, clear and fast):
+We made a little cluster of rake tasks:
 
 - `lib/tasks/function.rake`
 - `lib/tasks/procedure.rake`
